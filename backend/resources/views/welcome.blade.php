@@ -22,7 +22,7 @@
         <!-- TOP CARD: HERO & DEV INFO -->
         <div class="glass-card hero-section">
             <div>
-                <h1>Secure Identity Portal</h1>
+                <h1>Contus Interview Task </h1>
                 <p class="subtitle">A robust decoupled Laravel 11 API Backend paired with a state-of-the-art React 18 +
                     Vite Frontend SPA, engineered with strict security filters, comprehensive automated testing, and
                     extensive bonus features.</p>
