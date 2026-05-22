@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
+import { Mail, Lock, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const { login, socialLogin } = useAuth();
@@ -14,6 +14,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Redirect path after login
   const from = location.state?.from?.pathname || '/';
@@ -23,12 +24,22 @@ const Login = () => {
     const newErrors = {};
     if (!email) {
       newErrors.email = 'Email address is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       newErrors.email = 'Please enter a valid email address';
     }
     
     if (!password) {
       newErrors.password = 'Password is required';
+    } else {
+      if (password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters long';
+      } else if (!/[a-zA-Z]/.test(password)) {
+        newErrors.password = 'Password must contain at least one letter';
+      } else if (!/\d/.test(password)) {
+        newErrors.password = 'Password must contain at least one number';
+      } else if (!/[@$!%*?&#^()_+=\[\]{};':"\\|,.<>\/?~`-]/.test(password)) {
+        newErrors.password = 'Password must contain at least one special character';
+      }
     }
     
     setErrors(newErrors);
@@ -103,7 +114,7 @@ const Login = () => {
                 id="email"
                 type="email"
                 className={`form-input ${errors.email ? 'is-invalid' : ''}`}
-                placeholder="santhosh@example.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={submitting}
@@ -124,14 +135,23 @@ const Login = () => {
             <div className="input-wrapper">
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 className={`form-input ${errors.password ? 'is-invalid' : ''}`}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={submitting}
+                style={{ paddingRight: '45px' }}
               />
               <Lock className="input-icon" size={18} />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             {errors.password && (
               <span className="error-text">

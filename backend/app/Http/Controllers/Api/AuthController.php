@@ -20,7 +20,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         $validated = $request->validated();
-        
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -59,7 +59,7 @@ class AuthController extends Controller
 
         // Revoke old tokens optionally for security, but keeping it simple and secure:
         $user->tokens()->delete();
-        
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -103,10 +103,10 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         $user = $request->user();
-        
+
         // Revoke current active token
         $user->currentAccessToken()->delete();
-        
+
         // Issue a fresh token
         $token = $user->createToken('auth_token')->plainTextToken;
 

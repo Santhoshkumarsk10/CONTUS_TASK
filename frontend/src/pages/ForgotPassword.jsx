@@ -15,7 +15,7 @@ const ForgotPassword = () => {
     const newErrors = {};
     if (!email) {
       newErrors.email = 'Email address is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       newErrors.email = 'Please enter a valid email address';
     }
     setErrors(newErrors);
@@ -114,7 +114,7 @@ const ForgotPassword = () => {
                   id="email"
                   type="email"
                   className={`form-input ${errors.email ? 'is-invalid' : ''}`}
-                  placeholder="santhosh@example.com"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={submitting}
