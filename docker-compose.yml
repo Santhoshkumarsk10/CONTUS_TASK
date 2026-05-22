@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: contus_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: contus_auth
+      MYSQL_ROOT_PASSWORD: user@123
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # Laravel API Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: contus_backend
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_DATABASE=contus_auth
+      - DB_USERNAME=root
+      - DB_PASSWORD=user@123
+
+  # Vite React Frontend SPA Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: contus_frontend
+    restart: unless-stopped
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+
+volumes:
+  db_data:
