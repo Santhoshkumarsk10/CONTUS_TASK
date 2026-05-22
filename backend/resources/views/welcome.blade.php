@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Reviewer Portal - Decoupled Secure Auth</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <!-- Google Fonts Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,7 +123,7 @@
                                 Administrator
                             </h4>
                             <p><strong>Email:</strong> admin@example.com</p>
-                            <p><strong>Pass:</strong> password123</p>
+                            <p><strong>Pass:</strong> Admin@123</p>
                         </div>
                         <div class="cred-box">
                             <h4>
@@ -131,7 +132,7 @@
                                 Standard User
                             </h4>
                             <p><strong>Email:</strong> user@example.com</p>
-                            <p><strong>Pass:</strong> password123</p>
+                            <p><strong>Pass:</strong> User@123</p>
                         </div>
                     </div>
                 </div>

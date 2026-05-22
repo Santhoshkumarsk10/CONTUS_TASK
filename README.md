@@ -127,12 +127,12 @@ The database seeder provisions two default user profiles with varying role permi
 
 ### 🛡️ Administrator Account
 * **Email Address**: `admin@example.com`
-* **Password**: `password123`
+* **Password**: `Admin@123`
 * **Access Level**: Full privileges, unlocks the Database Statistics card and Users control center.
 
 ### 👤 Standard User Account
 * **Email Address**: `user@example.com`
-* **Password**: `password123`
+* **Password**: `User@123`
 * **Access Level**: Restricted profile view only.
 
 ---

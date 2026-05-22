@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserCreated;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -202,7 +203,7 @@ class AuthController extends Controller
             'password' => [
                 'required',
                 'string',
-                \Illuminate\Validation\Rules\Password::min(8)
+                Password::min(8)
                     ->letters()
                     ->numbers()
                     ->symbols()
