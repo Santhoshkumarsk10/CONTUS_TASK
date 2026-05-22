@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use \Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
 
 class PasswordResetController extends Controller
 {
@@ -45,15 +48,30 @@ class PasswordResetController extends Controller
             'created_at' => now()
         ]);
 
+        $user = User::where('email', $email)->first();
+
         // Construct SPA reset URL
         $resetUrl = "http://localhost:5173/reset-password?token={$token}&email=" . urlencode($email);
 
+        // Send actual email via SMTP
+        try {
+            Mail::to($user->email)->send(new ResetPasswordMail($user, $resetUrl));
+            $mailSent = true;
+            $mailMessage = 'Password reset email triggered successfully via SMTP.';
+        } catch (\Exception $e) {
+            Log::error('Password reset SMTP mail failed: ' . $e->getMessage());
+            $mailSent = false;
+            $mailMessage = 'SMTP mail transport failed, but password reset token generated.';
+        }
+
         // Log the email and reset URL locally (Laravel standard fallback when mailer is 'log')
-        Log::info("Password reset requested for {$email}. Token: {$token}. Reset URL: {$resetUrl}");
+        Log::info("Password reset requested for {$email}. Token: {$token}. Reset URL: {$resetUrl}. SMTP Status: " . ($mailSent ? 'Sent' : 'Failed'));
 
         return response()->json([
             'success' => true,
-            'message' => 'We have emailed your password reset link! (Checked laravel.log)',
+            'message' => 'We have emailed your password reset link!',
+            'mail_sent' => $mailSent,
+            'mail_message' => $mailMessage,
             'debug_token' => $token, // Return token for easy API / manual testing without opening logs!
             'debug_reset_url' => $resetUrl
         ], 200);
@@ -67,7 +85,15 @@ class PasswordResetController extends Controller
         $validator = Validator::make($request->all(), [
             'token' => 'required|string',
             'email' => 'required|email|exists:users,email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => [
+                'required',
+                'string',
+                'confirmed',
+                Password::min(8)
+                    ->letters()
+                    ->numbers()
+                    ->symbols()
+            ],
         ]);
 
         if ($validator->fails()) {

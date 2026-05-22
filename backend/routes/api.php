@@ -24,6 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
     
     // Role-Restricted Admin Routes
-    Route::middleware('role:admin')->get('/admin/stats', [AuthController::class, 'adminStats']);
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/stats', [AuthController::class, 'adminStats']);
+        Route::get('/admin/users', [AuthController::class, 'listUsers']);
+        Route::post('/admin/users', [AuthController::class, 'createUser']);
+    });
 });
 

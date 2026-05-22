@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserCreated;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -20,7 +23,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         $validated = $request->validated();
-        
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -59,7 +62,7 @@ class AuthController extends Controller
 
         // Revoke old tokens optionally for security, but keeping it simple and secure:
         $user->tokens()->delete();
-        
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -103,10 +106,10 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         $user = $request->user();
-        
+
         // Revoke current active token
         $user->currentAccessToken()->delete();
-        
+
         // Issue a fresh token
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -174,5 +177,64 @@ class AuthController extends Controller
                 'token_type' => 'Bearer'
             ]
         ], 200);
+    }
+
+    /**
+     * List all registered users (Admin only).
+     */
+    public function listUsers(Request $request)
+    {
+        $users = User::orderBy('created_at', 'desc')->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Users listed successfully',
+            'data' => UserResource::collection($users)
+        ], 200);
+    }
+
+    /**
+     * Create a new user (Admin only) and trigger SMTP mail.
+     */
+    public function createUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => [
+                'required',
+                'string',
+                Password::min(8)
+                    ->letters()
+                    ->numbers()
+                    ->symbols()
+            ],
+            'role' => 'required|string|in:user,admin',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+        ]);
+
+        // Trigger the SMTP email notification
+        try {
+            Mail::to($user->email)->send(new UserCreated($user, $request->password));
+            $mailSent = true;
+            $mailMessage = 'Email notification sent successfully via SMTP.';
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('SMTP Mail failed: ' . $e->getMessage());
+            $mailSent = false;
+            $mailMessage = 'User created but SMTP mail failed: ' . $e->getMessage();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User created successfully',
+            'mail_sent' => $mailSent,
+            'mail_message' => $mailMessage,
+            'data' => new UserResource($user)
+        ], 201);
     }
 }
