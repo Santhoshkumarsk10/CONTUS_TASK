@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import api from '../services/api';
-import { Lock, RefreshCw, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Lock, RefreshCw, CheckCircle, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ const ResetPassword = () => {
   const [apiError, setApiError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // If token or email is missing, show an immediate inline error
   useEffect(() => {
@@ -30,8 +32,16 @@ const ResetPassword = () => {
     const newErrors = {};
     if (!password) {
       newErrors.password = 'New password is required';
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
+    } else {
+      if (password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters long';
+      } else if (!/[a-zA-Z]/.test(password)) {
+        newErrors.password = 'Password must contain at least one letter';
+      } else if (!/\d/.test(password)) {
+        newErrors.password = 'Password must contain at least one number';
+      } else if (!/[@$!%*?&#^()_+=\[\]{};':"\\|,.<>\/?~`-]/.test(password)) {
+        newErrors.password = 'Password must contain at least one special character';
+      }
     }
 
     if (password !== passwordConfirmation) {
@@ -127,14 +137,23 @@ const ResetPassword = () => {
               <div className="input-wrapper">
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   className={`form-input ${errors.password ? 'is-invalid' : ''}`}
                   placeholder="Minimum 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={submitting || !token || !email}
+                  style={{ paddingRight: '45px' }}
                 />
                 <Lock className="input-icon" size={18} />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex="-1"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {errors.password && (
                 <span className="error-text">
@@ -150,14 +169,23 @@ const ResetPassword = () => {
               <div className="input-wrapper">
                 <input
                   id="passwordConfirmation"
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   className={`form-input ${errors.password_confirmation ? 'is-invalid' : ''}`}
                   placeholder="Repeat new password"
                   value={passwordConfirmation}
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
                   disabled={submitting || !token || !email}
+                  style={{ paddingRight: '45px' }}
                 />
                 <Lock className="input-icon" size={18} />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  tabIndex="-1"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {errors.password_confirmation && (
                 <span className="error-text">

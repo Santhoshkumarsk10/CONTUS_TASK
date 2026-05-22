@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Lock, UserPlus, Shield, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, UserPlus, Shield, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
   const { register } = useAuth();
@@ -17,6 +17,8 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Client-side validation
   const validateForm = () => {
@@ -27,14 +29,22 @@ const Register = () => {
 
     if (!email) {
       newErrors.email = 'Email address is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
+    } else {
+      if (password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters long';
+      } else if (!/[a-zA-Z]/.test(password)) {
+        newErrors.password = 'Password must contain at least one letter';
+      } else if (!/\d/.test(password)) {
+        newErrors.password = 'Password must contain at least one number';
+      } else if (!/[@$!%*?&#^()_+=\[\]{};':"\\|,.<>\/?~`-]/.test(password)) {
+        newErrors.password = 'Password must contain at least one special character';
+      }
     }
 
     if (password !== passwordConfirmation) {
@@ -104,7 +114,7 @@ const Register = () => {
                 id="name"
                 type="text"
                 className={`form-input ${errors.name ? 'is-invalid' : ''}`}
-                placeholder="Santhosh Kumar"
+                placeholder="John Doe"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={submitting}
@@ -127,7 +137,7 @@ const Register = () => {
                 id="email"
                 type="email"
                 className={`form-input ${errors.email ? 'is-invalid' : ''}`}
-                placeholder="santhosh@example.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={submitting}
@@ -174,14 +184,23 @@ const Register = () => {
             <div className="input-wrapper">
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 className={`form-input ${errors.password ? 'is-invalid' : ''}`}
                 placeholder="Minimum 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={submitting}
+                style={{ paddingRight: '45px' }}
               />
               <Lock className="input-icon" size={18} />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             {errors.password && (
               <span className="error-text">
@@ -197,14 +216,23 @@ const Register = () => {
             <div className="input-wrapper">
               <input
                 id="passwordConfirmation"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 className={`form-input ${errors.password_confirmation ? 'is-invalid' : ''}`}
                 placeholder="Repeat password"
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
                 disabled={submitting}
+                style={{ paddingRight: '45px' }}
               />
               <Lock className="input-icon" size={18} />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                tabIndex="-1"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             {errors.password_confirmation && (
               <span className="error-text">
